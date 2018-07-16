@@ -12,14 +12,18 @@ print("Save in \"processed\" directory")
 
 mpimg.imsave('processed/solidWhiteRight.png', image)
 
+
 def greyscale(img):
-    return cv2.cvtColor(img,cv2.COLOR_RGB2GRAY)
+    return cv2.cvtColor(img, cv2.COLOR_RGB2GRAY)
+
 
 def canny(img, low_threshold, high_threshold):
-    return cv2.Canny(img,low_threshold,high_threshold)
+    return cv2.Canny(img, low_threshold, high_threshold)
+
 
 def gaussian_blur(img, kernel_size):
     return cv2.GaussianBlur(img, (kernel_size, kernel_size), 0)
+
 
 def region_to_detect(img, vertices):
     mask = np.zeros_like(img)
@@ -34,6 +38,7 @@ def region_to_detect(img, vertices):
 
     masked_imge = cv2.bitwise_and(img, mask)
     return masked_imge
+
 
 def draw_lines(img, lines, color=[255, 0, 0], thickness=6):
     left_slope = []
@@ -116,4 +121,19 @@ def weighted_img(img, initial_img, α=0.8, β=1., λ=0.):
 # -- Gaussian blur
 # -- canny
 # -- pick the region for detection
-# -- hough_transform and draw lines
+# -- Hough_transform and draw lines
+
+def Lane_finding(img, kernel_size=5, low_threshold=50, high_threshold=150, rho=2,
+                 theta=np.pi / 180, threshold=15, min_line_len=60, max_line_gap=30):
+    imshape = img.shape
+    gray_img = greyscale(img)
+    gaussian_blurred = gaussian_blur(gray_img, kernel_size)
+    canny_img = canny(gaussian_blurred, low_threshold, high_threshold)
+    vertices = np.array([[(0, imshape[0]), (imshape[1] / 2.0 - 20, imshape[0] * 0.6),
+                          (imshape[1] / 2.0 + 20, imshape[0] * 0.6), (imshape[1], imshape[0])]], dtype=np.int32)
+    region_to_detect(canny_img, vertices)
+    line_img = hough_lines(img, rho, theta, threshold, min_line_len, max_line_gap)
+
+    return line_img
+
+
